@@ -1,4 +1,114 @@
+:root {
+    --secondary: #2a5fb5;
+    --border: #052963;
+}
+
+@font-face {
+    font-family: 'Anton';
+    src: url('/fonts/RubikMonoOne-Regular.ttf') format('truetype');
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(156deg, rgba(0, 164, 230, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+}
+button {
+    border: 2px solid var(--border);
+    outline: none;
+    border-radius: 50px;
+    font-size: 1.6rem;
+    background: var(--secondary);
+    color: rgb(255, 255, 255);
+    padding: 0.5rem;
+}
+input {
+    border: 2px solid var(--border);
+    outline: none;
+    border-radius: 50px;
+    font-size: 1.6rem;
+    background: transparent;
+}
+.page-container {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    flex-grow: 1;
+    box-sizing: border-box; 
+    align-items: center;
+    justify-content: center;
+}
+#home-grid {
+    display: grid;
+    grid-template-columns: repeat(minmax(1fr, 280px));
+    gap: 1rem;
+}
+#title {
+    margin-bottom: 5rem;
+    font-size: 2.5rem;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    background: var(--secondary);
+    border: 5px solid var(--border);
+    padding: 0.5rem;
+    border-radius: 20px;
+}
+#title span {
+    color: #e7af5a;
+    font-family: Anton, Arial, Helvetica, sans-serif;
+}
 .player-icon {
     width: 100px;
     height: 100px;
+    border-radius: 100px;
+    position: relative;
+    border: 8px solid var(--border);
+}
+#change-icon {
+    z-index: 999;
+    background: url("/assets/refresh.png");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    bottom: 80%;
+    left: 80%;
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+}
+#change-icon:hover {
+    background-color: var(--secondary);
+}
+#name-input {
+    margin-top: 2rem;
+    padding: 0.5rem;
+}
+#write-area {
+    width: 500px;
+    height: 200px;
+    font-size: 1.5rem;
+}
+
+@media screen and (max-width: 600px) {
+    input, button {
+        font-size: 1.4rem !important;
+    }
+    #title {
+        font-size: 2.5rem !important;
+    }
+}
+@media screen and (max-width: 500px) {
+    input, button {
+        font-size: 1.2rem !important;
+    }
+    #title {
+        font-size: 1.8rem !important;
+    }
+    #write-area {
+        width: 300px !important;
+    }
 }

@@ -9,15 +9,25 @@
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
 </head>
 <body>
-    <input type="text" placeholder="coolnickname" id="name-input">
 
-    <grid id="player-grid">
-        <button id="change-icon"><div id="player-icon" class="player-icon"></div></button>
-    </grid>
+    <div class="page-container">
+        
+        <grid id="player-grid">
+        
+        </grid>
 
-    <button id="inviteBtn">inviteBtn</button>
-    <button id="start-game">start game</button>
-    <button id="leave">LEAVE GAME</button>
+        <div id="player-icon" class="player-icon"><button id="change-icon"></button></div>
+
+        <div id="home-grid">
+            <input type="text" placeholder="coolnickname" id="name-input">
+            <button id="leave">leave</button>
+            <button id="inviteBtn">invite</button>
+            <button id="start-game">start game</button>
+        </div>
+    </div>
+
+
+
 
     <script>
 
@@ -43,7 +53,6 @@
         // EVENT LISNTENER FOR CHANGING PLAYER'S CHARACTER ICON
         changeIcon.addEventListener('click', ()=> {
             Request('change-icon', 'POST', { gameID: gameID }).then(response => {
-                console.log("image path:", `url("/assets/${response.icon}.png")`);
                 playerIcon.style.background = `url("/assets/${response.icon}.png")`;
             }).catch(error => { console.error('Error:', error); });
         });
@@ -98,7 +107,7 @@
         }
 
         const socket = io(window.location.hostname === 'localhost' 
-                ? 'http://localhost:8080/api/' 
+                ? 'http://localhost:8080' 
                 : 'https://out-of-context-0b91e7b9a70a.herokuapp.com', {
             withCredentials: true  
         });

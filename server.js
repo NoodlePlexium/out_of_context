@@ -309,7 +309,6 @@ app.post('/api/change-icon', (req, res) => {
 
     // INFORM OTHER PLAYERS IN GAME 
     const gameID = req.body.gameID;
-    console.log(gameID);
     if (gameID != null)
     {
         // NOTIFY ALL PLAYERS IN ROOM THAT PLAYER NAME CHANGED

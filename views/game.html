@@ -10,26 +10,29 @@
 </head>
 <body>
 
-    <h1> THIS IS THE GAME </h1>
-    <button id="leave">LEAVE GAME</button>
+    <div class="page-container">
+        <button id="leave">leave game</button>
 
-    <!-- PLAYER'S TURN UI -->
-    <div id="write-container" style="display: none;">
-        <h1>Its your turn!</h1>
-        <h3>continue the story</h3>
-        <p id="prev-sentence"></p>
-        <textarea id="write-area"></textarea>
-        <button id="write-submit">end sentence</button>
-    </div>
+        <!-- PLAYER'S TURN UI -->
+        <div id="write-container" style="display: none;">
+            <h1 style="text-align: center; font-size: 3rem;">Its your turn!</h1>
+            <h3 style="text-align: center; font-size: 2.5rem; margin-top: 0;">continue the story</h3>
+            <p id="prev-sentence"></p>
+            <div id="home-grid">
+                <textarea id="write-area"></textarea>
+                <button id="write-submit">end sentence</button>
+            </div>
+        </div>
 
-    <!-- PLAYER WAITS UI -->
-    <div id="wait-container" style="display: none;">
-        <h1 id="turn-indicator"></h1>
-    </div>
+        <!-- PLAYER WAITS UI -->
+        <div id="wait-container" style="display: none;">
+            <h1 id="turn-indicator"></h1>
+        </div>
 
-    <!-- GAME ENDS UI -->
-    <div id="game-end-container" style="display: none;">
-        <p id="game-end-text"></p>
+        <!-- GAME ENDS UI -->
+        <div id="game-end-container" style="display: none;">
+            <p id="game-end-text"></p>
+        </div>
     </div>
 
     <script>
@@ -100,7 +103,7 @@
         }
 
         const socket = io(window.location.hostname === 'localhost' 
-                ? 'http://localhost:8080/api/' 
+                ? 'http://localhost:8080' 
                 : 'https://out-of-context-0b91e7b9a70a.herokuapp.com', {
             withCredentials: true  
         });

@@ -7,13 +7,21 @@
 <link rel="stylesheet" href="/styles/style.css">
 </head>
     <body>
-        <h1>Invited to game</h1>
 
-        <button id="home">RETURN HOME</button>
-        <label for="name">choose a name!</label>
-        <input type="text" placeholder="coolnickname" id="name-input">
-        <button id="change-icon"><div id="player-icon" class="player-icon"></div></button>
-        <button id="join-game">JOIN GAME</button>
+
+        <div class="page-container">
+            <h1>Invited to game</h1>
+
+            <div id="player-icon" class="player-icon"><button id="change-icon"></button></div>
+
+            <div id="home-grid">
+                <input type="text" placeholder="coolnickname" id="name-input">
+                <button id="home">home</button>
+                <button id="join-game">join game</button>
+            </div>
+        </div>
+
+        
 
         <!-- place the game id in the hidden field -->
         <script>

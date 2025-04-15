@@ -8,9 +8,15 @@
     <link rel="stylesheet" href="/styles/style.css">
 </head>
 <body>
-    <input type="text" placeholder="coolnickname" id="name-input">
-    <button id="change-icon"><div id="player-icon" class="player-icon"></div></button>
-    <button id="create-game">create game</button>
+
+    <div class="page-container">
+        <p id="title">Out <Span>of</Span> Context</p>
+        <div id="player-icon" class="player-icon"><button id="change-icon"></button></div>
+        <div id="home-grid">
+            <input type="text" placeholder="coolnickname" id="name-input">
+            <button id="create-game">create game</button>    
+        </div>
+    </div>
 
     <script>
 
@@ -21,9 +27,7 @@
 
         // EVENT LISTENER FOR CHANGING PLAYER'S NAME
         nameInput.addEventListener('change', ()=> {
-            Request('change-name', 'PUT', { newName: nameInput.value }).then(repsonse => {
-                
-            }).catch(error => { console.error('Error:', error); });
+            Request('change-name', 'PUT', { newName: nameInput.value }).then(repsonse => {}).catch(error => { console.error('Error:', error); });
         });
 
         // EVENT LISNTENER FOR CHANGING PLAYER'S CHARACTER ICON
@@ -61,8 +65,8 @@
         async function Request(endpoint, method, body=null) 
         {
             const baseURL = window.location.hostname === 'localhost' 
-                ? 'http://localhost:8080/api/' 
-                : 'https://out-of-context-0b91e7b9a70a.herokuapp.com/api/';
+            ? 'http://localhost:8080/api/' 
+            : 'https://out-of-context-0b91e7b9a70a.herokuapp.com/api/';
             const URL = `${baseURL}${endpoint}`;
             const response = await fetch(URL, {
                 method: method,
