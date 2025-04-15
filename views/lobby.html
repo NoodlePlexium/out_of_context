@@ -83,7 +83,9 @@
 
                 // EVENT LISTENER FOR INVITE BUTTON
                 inviteBtn.addEventListener('click', ()=> {
-                    const inviteURL = `http://localhost:8080/invited/?game=${gameID}`;
+                    const inviteURL = window.location.hostname === 'localhost' 
+                    ? `http://localhost:8080/invited/?game=${gameID}` 
+                    : `https://out-of-context-0b91e7b9a70a.herokuapp.com/invited/?game=${gameID}`
                     navigator.clipboard.writeText(inviteURL);
                 });
                 
