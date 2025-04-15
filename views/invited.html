@@ -74,7 +74,9 @@
 
             async function Request(endpoint, method, body=null) 
             {
-                const baseURL = "http://localhost:8080/api/";  
+                const baseURL = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:8080/api/' 
+                    : 'https://sasol-safe-travel-7f8dfd4251da.herokuapp.com/api/';
                 const URL = `${baseURL}${endpoint}`;
                 const response = await fetch(URL, {
                     method: method,

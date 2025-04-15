@@ -16,6 +16,7 @@ const io = socketIo(server);
 
 
 // -------------------- MIDDLEWARE -------------------- //
+app.set('views', path.join(__dirname, 'views'));
 app.use('/styles', express.static(path.join(__dirname, 'styles')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/fonts', express.static(path.join(__dirname, 'fonts')));

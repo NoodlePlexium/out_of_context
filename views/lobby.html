@@ -95,7 +95,9 @@
             }).catch(error => { console.error('Error:', error); });
         }
 
-        const socket = io('http://localhost:8080', {
+        const socket = io(window.location.hostname === 'localhost' 
+                ? 'http://localhost:8080/api/' 
+                : 'https://sasol-safe-travel-7f8dfd4251da.herokuapp.com/api/', {
             withCredentials: true  
         });
         socket.on('connect', () => {
