@@ -1,0 +1,28 @@
+{
+  "name": "out-of-context",
+  "version": "1.0.0",
+  "description": "A party game where players take turns to build up a story one sentence at a time. Each time a player adds a sentence, they only get to see the sentence that came before. This results in a story that changes rapidly from one topic to another.",
+  "main": "server.js",
+  "scripts": {
+    "test": "npm run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NoodlePlexium/out_of_context.git"
+  },
+  "author": "Arran Stevens",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NoodlePlexium/out_of_context/issues"
+  },
+  "homepage": "https://github.com/NoodlePlexium/out_of_context#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "http": "^0.0.1-security",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "uuid": "^11.1.0"
+  }
+}

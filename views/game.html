@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Out OF Context</title>
+    <link rel="icon" href="/assets/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="/styles/style.css">
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+
+    <h1> THIS IS THE GAME </h1>
+    <button id="leave">LEAVE GAME</button>
+
+    <!-- PLAYER'S TURN UI -->
+    <div id="write-container" style="display: none;">
+        <h1>Its your turn!</h1>
+        <h3>continue the story</h3>
+        <p id="prev-sentence"></p>
+        <textarea id="write-area"></textarea>
+        <button id="write-submit">end sentence</button>
+    </div>
+
+    <!-- PLAYER WAITS UI -->
+    <div id="wait-container" style="display: none;">
+        <h1 id="turn-indicator"></h1>
+    </div>
+
+    <!-- GAME ENDS UI -->
+    <div id="game-end-container" style="display: none;">
+        <p id="game-end-text"></p>
+    </div>
+
+    <script>
+        const playerIcon = document.getElementById('player-icon');
+        const leaveBtn = document.getElementById('leave');
+
+        const writeContainer = document.getElementById('write-container');
+        const prevSentence = document.getElementById('prev-sentence');
+        const writeArea = document.getElementById('write-area');
+        const writeSubmit = document.getElementById('write-submit');
+
+        const waitContainer = document.getElementById('wait-container');
+        const turnIndicator = document.getElementById('turn-indicator');
+
+        const gameEndContainer = document.getElementById('game-end-container');
+        const gameEndText = document.getElementById('game-end-text');
+
+        let clientId = null;
+        let gameID = null;
+        let playerData = {};
+        let playOrder = null;
+
+
+        // EVENT LISTENER TO LEAVE THE GAME
+        leaveBtn.addEventListener('click', ()=> {
+            Request('leave-game', 'POST').then(response => {
+                window.location.href = response.url;
+            });
+        })
+        
+
+        Init();
+
+        function Init()
+        {
+            // GET THE CLIENT ID FROM THE SERVER
+            Request('game-info', 'GET').then(response => {
+                clientId = response.clientId;
+                gameID = response.gameID;
+                playerData = response.playerData;
+
+                // INFORM OTHER PLAYERS ON JOIN
+                socket.emit('joinGame', gameID);
+
+                // GET ORDER OF PLAY
+                Request('play-order', 'GET').then(response => {
+                    playOrder = response.order;
+
+                    // IF CLIENT IS FIRST
+                    if (playOrder[0] == clientId)
+                    {
+                        StartTurn();
+                    }
+                    else
+                    {
+                        writeContainer.style.display = 'none';
+                        waitContainer.style.display = 'block';
+                    }
+
+                }).catch(error => { console.error('Error:', error); });
+
+                // EVENT LISTENER TO SUBMIT SENTENCE
+                writeSubmit.addEventListener('click', ()=> {
+                    EndTurn();
+                });
+
+            }).catch(error => { console.error('Error:', error); });
+        }
+
+        const socket = io('http://localhost:8080', {
+            withCredentials: true  
+        });
+        socket.on('connect', () => {
+            console.log('Connected to the server!');
+        });
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server!');
+        });
+        socket.on('message', (data) => {
+            console.log('Message from server:', data);
+        });
+        socket.on('playerLeft', (data) => {                         // PLAYER LEAVES ROOM
+        
+        });
+        socket.on('turnEnded', (data) => {
+
+            // IF IT IS NOW CLIENT'S TURN
+            if (playOrder[data.playerTurn] == clientId) {
+                prevSentence.textContent = data.sentence;
+                StartTurn();
+            }
+            turnIndicator.textContent = playerData.gamertags[data.playerTurn];
+        });
+        socket.on('gameEnded', (data) => {
+            console.log("game ended!");
+            EndGame(data.story);
+        });
+
+        function StartTurn()
+        {
+            writeContainer.style.display = 'block';
+            waitContainer.style.display = 'none';
+        }
+
+        function EndTurn()
+        {
+            sentence = writeArea.value;
+            writeArea.value = '';
+            prevSentence.textContent = '';
+            writeContainer.style.display = 'none';
+            waitContainer.style.display = 'block';
+
+            // SEND SENTENCE TO SERVER
+            Request('end-turn', 'PUT', { sentence: sentence })
+        }
+
+        function EndGame(story)
+        {
+            writeContainer.style.display = 'none';
+            waitContainer.style.display = 'none';
+            gameEndContainer.style.display = 'block';
+            gameEndText.textContent = story;
+        }
+
+        async function Request(endpoint, method, body=null) 
+        {
+            const baseURL = window.location.hostname === 'localhost' 
+                ? 'http://localhost:8080/api/' 
+                : 'https://sasol-safe-travel-7f8dfd4251da.herokuapp.com/api/';
+            const URL = `${baseURL}${endpoint}`;
+            const response = await fetch(URL, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: body ? JSON.stringify(body) : null  
+            });
+            
+            if (!response.ok) {
+                throw new Error(`"${endpoint}" request failed. status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data;
+        }
+    </script>
+</body>
+</html>

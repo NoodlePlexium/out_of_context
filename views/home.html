@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Out OF Context</title>
+    <link rel="icon" href="/assets/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+    <input type="text" placeholder="coolnickname" id="name-input">
+    <button id="change-icon"><div id="player-icon" class="player-icon"></div></button>
+    <button id="create-game">create game</button>
+
+    <script>
+
+        const nameInput = document.getElementById('name-input');
+        const changeIcon = document.getElementById('change-icon');
+        const playerIcon = document.getElementById('player-icon');
+        const createGame = document.getElementById('create-game');
+
+        // EVENT LISTENER FOR CHANGING PLAYER'S NAME
+        nameInput.addEventListener('change', ()=> {
+            Request('change-name', 'PUT', { newName: nameInput.value }).then(repsonse => {
+                
+            }).catch(error => { console.error('Error:', error); });
+        });
+
+        // EVENT LISNTENER FOR CHANGING PLAYER'S CHARACTER ICON
+        changeIcon.addEventListener('click', ()=> {
+            Request('change-icon', 'POST').then(response => {
+                console.log("image path:", `url("/assets/${response.icon}.png")`);
+                playerIcon.style.background = `url("/assets/${response.icon}.png")`;
+            }).catch(error => { console.error('Error:', error); });
+        });
+
+        // EVENT LISTENER FOR CREATING A GAME
+        createGame.addEventListener('click', ()=> {
+            Request('create-game', 'POST', {}).then(response => {
+                window.location.href = response.url; 
+            }).catch(error => { console.error('Error:', error); });
+        });
+
+        Init();
+
+        function Init()
+        {
+            // SET GAMERTAG IF EXISTS
+            Request('player-gamertag', 'GET').then(response =>{
+                if (response.gamertag) {
+                    nameInput.value = response.gamertag;
+                }
+            }).catch(error => { console.error('Error:', error); });
+
+            // GET THE PLAYER'S ICON NAME FROM THE SERVER
+            Request('player-icon', 'GET').then(response => {
+                playerIcon.style.background = `url("/assets/${response.icon}.png")`;
+            }).catch(error => { console.error('Error:', error); });
+        }
+
+        async function Request(endpoint, method, body=null) 
+        {
+            const baseURL = window.location.hostname === 'localhost' 
+                ? 'http://localhost:8080/api/' 
+                : 'https://sasol-safe-travel-7f8dfd4251da.herokuapp.com/api/';
+            const URL = `${baseURL}${endpoint}`;
+            const response = await fetch(URL, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: body ? JSON.stringify(body) : null  
+            });
+            
+            if (!response.ok) {
+                throw new Error(`"${endpoint}" request failed. status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data;
+        }
+    </script>
+</body>
+</html>

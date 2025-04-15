@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Out OF Context</title>
+    <link rel="icon" href="/assets/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="/styles/style.css">
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <input type="text" placeholder="coolnickname" id="name-input">
+
+    <grid id="player-grid">
+        <button id="change-icon"><div id="player-icon" class="player-icon"></div></button>
+    </grid>
+
+    <button id="inviteBtn">inviteBtn</button>
+    <button id="start-game">start game</button>
+    <button id="leave">LEAVE GAME</button>
+
+    <script>
+
+        const nameInput = document.getElementById('name-input');
+        const playerGrid = document.getElementById('player-grid');
+        const changeIcon = document.getElementById('change-icon');
+        const playerIcon = document.getElementById('player-icon');
+        const inviteBtn = document.getElementById('inviteBtn');
+        const startGame = document.getElementById('start-game');
+        const leaveBtn = document.getElementById('leave');
+
+        let clientId = null;
+        let gameID = null;
+        let playerData = {};
+
+        // EVENT LISTENER FOR CHANGING PLAYER'S NAME
+        nameInput.addEventListener('change', ()=> {
+            Request('change-name', 'PUT', { newName: nameInput.value, gameID: gameID }).then(repsonse => {
+                
+            }).catch(error => { console.error('Error:', error); });
+        });
+
+        // EVENT LISNTENER FOR CHANGING PLAYER'S CHARACTER ICON
+        changeIcon.addEventListener('click', ()=> {
+            Request('change-icon', 'POST', { gameID: gameID }).then(response => {
+                console.log("image path:", `url("/assets/${response.icon}.png")`);
+                playerIcon.style.background = `url("/assets/${response.icon}.png")`;
+            }).catch(error => { console.error('Error:', error); });
+        });
+
+        // EVENT LISTENER FOR STARTING THE GAME
+        startGame.addEventListener('click', ()=> {
+            Request('start-game', 'POST', {}).then(response => {
+                window.location.href = response.url; 
+            }).catch(error => { console.error('Error:', error); });
+        });
+
+        // EVENT LISTENER TO LEAVE THE GAME
+        leaveBtn.addEventListener('click', ()=> {
+            Request('leave-game', 'POST').then(response => {
+                window.location.href = response.url;
+            });
+        })
+
+        Init();
+
+        function Init()
+        {
+            // GET THE CLIENT ID FROM THE SERVER
+            Request('game-info', 'GET').then(response => {
+                clientId = response.clientId;
+                gameID = response.gameID;
+                playerData = response.playerData;
+
+                // SET CLIENT'S ICON
+                playerIcon.style.background = `url("/assets/${response.icon}.png")`;
+
+                // SET CLIENT'S GAMERTAG
+                nameInput.value = response.gamertag;
+
+                // INFORM OTHER PLAYERS ON JOIN
+                socket.emit('joinGame', gameID);
+
+                // EVENT LISTENER FOR INVITE BUTTON
+                inviteBtn.addEventListener('click', ()=> {
+                    const inviteURL = `http://localhost:8080/invited/?game=${gameID}`;
+                    navigator.clipboard.writeText(inviteURL);
+                });
+                
+                // OTHER PLAYER'S DATA 
+                for (let i=0; i<playerData.gamertags.length; i++) {
+                    console.log("Add player to html");
+                    AddPlayer(playerData.gamertags[i], playerData.clientIds[i], playerData.icons[i]);
+                }
+            }).catch(error => { console.error('Error:', error); });
+        }
+
+        const socket = io('http://localhost:8080', {
+            withCredentials: true  
+        });
+        socket.on('connect', () => {
+            console.log('Connected to the server!');
+        });
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server!');
+        });
+        socket.on('message', (data) => {
+            console.log('Message from server:', data);
+        });
+        socket.on('playerJoined', (data) => {                       // PLAYER JOINS ROOM
+            console.log("player joined lobby");
+            AddPlayer(data.gamertag, data.clientId, data.icon);
+        });
+        socket.on('playerLeft', (data) => {                         // PLAYER LEAVES ROOM
+            RemovePlayer(data.clientId);
+        });
+        socket.on('startGame', (response) => {                      // PLAYER STARTS GAME
+            window.location.href = response.redirect;
+        });
+        socket.on('changedIcon', (data) => {
+            if (data.clientId == clientId) return;
+            console.log("player changed icon");
+            UpdatePlayerIcon(data.clientId, data.icon);
+        });
+        socket.on('changedName', (data) => {
+            if (data.clientId == clientId) return;
+            console.log("player changed their name");
+            UpdatePlayerName(data.clientId, data.gamertag);
+        });
+
+        function AddPlayer(gamertag, clientId, icon)
+        {
+            var newElement = document.createElement("div");
+            newElement.innerHTML = `<div class="player-icon"></div><div class="player-name">${gamertag}</div>`;
+            newElement.firstChild.style.background = `url("/assets/${icon}.png")`;
+            playerGrid.appendChild(newElement);
+            playerData[clientId] = newElement;
+        }
+
+        function RemovePlayer(clientId)
+        {
+            console.log(playerData);
+            playerData[clientId].remove();
+            delete playerData[clientId];
+        }
+
+        function UpdatePlayerName(clientId, gamertag)
+        {
+            playerData[clientId].getElementsByClassName("player-name")[0].textContent = gamertag;
+        }
+
+        function UpdatePlayerIcon(clientId, icon)
+        {
+            console.log('update player icon:', clientId);
+            console.log(playerData[clientId]);
+            playerData[clientId].getElementsByClassName("player-icon")[0].style.background = `url("/assets/${icon}.png")`;
+        }
+
+        async function Request(endpoint, method, body=null) 
+        {
+            const baseURL = window.location.hostname === 'localhost' 
+                ? 'http://localhost:8080/api/' 
+                : 'https://sasol-safe-travel-7f8dfd4251da.herokuapp.com/api/';
+            const URL = `${baseURL}${endpoint}`;
+            const response = await fetch(URL, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: body ? JSON.stringify(body) : null  
+            });
+            
+            if (!response.ok) {
+                throw new Error(`"${endpoint}" request failed. status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data;
+        }
+    </script>
+</body>
+</html>
