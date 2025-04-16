@@ -15,11 +15,16 @@
         <button id="home-btn"><div></div></button>
     
         <div id="player-list">
+            <!-- dummy empty playe -->
+            <div class="player-item" style="width: 0; padding: 0; margin-top: calc(1rem + 2px); margin-right: 0; border: none;">
+                <div class="other-player-icon"></div>
+                <div style="color: var(--pink-light);">T</div>
+            </div>
         </div>
 
         <div id="player-icon" class="player-icon"><div id="player-icon-image"></div><button id="change-icon"></button></div>
 
-        <div id="home-grid">
+        <div class="home-grid">
             <input type="text" placeholder="Guest" id="name-input" style="margin-top: 2rem;">
             <button id="inviteBtn">invite</button>
             <button id="start-game">start game</button>
@@ -87,7 +92,7 @@
                 // SET CLIENT'S GAMERTAG
                 nameInput.value = response.gamertag;
 
-                // INFORM OTHER PLAYERS ON JOIN
+                // CONNECT SOCKET TO GAME ROOM
                 socket.emit('joinGame', gameID);
 
                 // EVENT LISTENER FOR INVITE BUTTON

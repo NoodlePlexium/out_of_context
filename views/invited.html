@@ -10,14 +10,16 @@
 
 
         <div class="page-container">
+
+            <button id="home-btn"><div></div></button>
+
             <h1>Invited to game</h1>
 
             <div id="player-icon" class="player-icon"><div id="player-icon-image"></div><button id="change-icon"></button></div>
 
             <p style="margin-top: 4rem; margin-bottom: 0;">choose a nickname</p>
-            <div id="home-grid">
+            <div class="home-grid">
                 <input type="text" placeholder="Guest" id="name-input">
-                <button id="home">home</button>
                 <button id="join-game">join game</button>
             </div>
         </div>
@@ -27,7 +29,7 @@
         <!-- place the game id in the hidden field -->
         <script>
 
-            const homeButton = document.getElementById("home");
+            const homeButton = document.getElementById("home-btn");
             const nameInput = document.getElementById('name-input');
             const changeIcon = document.getElementById('change-icon');
             const playerIconImage = document.getElementById('player-icon-image');
@@ -59,14 +61,17 @@
             // EVENT LISTENER FOR JOINING GAME
             joinBtn.addEventListener('click', ()=> {
                 Request('game-available', 'POST', {gameID: gameID}).then(response => {
-                    if (response.available)
+                    if (response.state == "true")
                     {
-                        console.log("[Join Game] game is available!");
                         Request('join-game', 'POST', {gameID: gameID}).then(response => {
                             window.location.href = response.url;
                         });
                     }
-                    else { alert("Game is no longer available"); }
+                    else if (response.state == "started")
+                    {
+                        alert("Game already started! Please create a new game.");
+                    }
+                    else { alert("Game is no longer available."); }
                 });
             });
 

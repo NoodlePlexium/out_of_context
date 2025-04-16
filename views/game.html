@@ -11,16 +11,19 @@
 <body>
 
     <div class="page-container">
-        <button id="leave">leave game</button>
+
+        <button id="home-btn"><div></div></button>
 
         <!-- PLAYER'S TURN UI -->
         <div id="write-container" style="display: none;">
             <h1 style="text-align: center; font-size: 3rem;">Its your turn!</h1>
-            <h3 style="text-align: center; font-size: 2.5rem; margin-top: 0;">continue the story</h3>
-            <p id="prev-sentence"></p>
-            <div id="home-grid">
-                <textarea id="write-area"></textarea>
-                <button id="write-submit">end sentence</button>
+            <p style="text-align: center; font-size: 2.5rem; margin-top: 0;">continue the story</p>
+            <div class="home-grid">
+                <p id="prev-sentence"></p>
+                <div style="display: flex; flex-direction: row">
+                    <textarea id="write-area"></textarea>
+                </div>
+                <button id="write-submit">End Turn</button>
             </div>
         </div>
 
@@ -31,13 +34,16 @@
 
         <!-- GAME ENDS UI -->
         <div id="game-end-container" style="display: none;">
-            <p id="game-end-text"></p>
+            <h1 style="text-align: center; font-size: 3rem;">Story Complete</h1>
+            <div class="home-grid">
+                <p id="game-end-text"></p>
+            </div>
         </div>
     </div>
 
     <script>
         const playerIcon = document.getElementById('player-icon');
-        const leaveBtn = document.getElementById('leave');
+        const homeBtn = document.getElementById('home-btn');
 
         const writeContainer = document.getElementById('write-container');
         const prevSentence = document.getElementById('prev-sentence');
@@ -57,7 +63,7 @@
 
 
         // EVENT LISTENER TO LEAVE THE GAME
-        leaveBtn.addEventListener('click', ()=> {
+        homeBtn.addEventListener('click', ()=> {
             Request('leave-game', 'POST').then(response => {
                 window.location.href = response.url;
             });
@@ -74,7 +80,7 @@
                 gameID = response.gameID;
                 playerData = response.playerData;
 
-                // INFORM OTHER PLAYERS ON JOIN
+                // CONNECT SOCKETTO GAME ROOM
                 socket.emit('joinGame', gameID);
 
                 // GET ORDER OF PLAY

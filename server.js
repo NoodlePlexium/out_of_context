@@ -70,7 +70,7 @@ io.on('connection', (socket) => {
 
 // -------------------- GAME MANAGEMENT -------------------- //
 let games = {}; 
-let iconNames = ['turtle', 'deer', 'frog', 'chicken'];
+let iconNames = ['crab', 'deer', 'eagle', 'flamengo', 'fox', 'hippo', 'peacock', 'penguin', 'shark', 'stalk', 'swan', 'turtle', 'walrus'];
 
 function Game() {
     this.players = [];
@@ -106,7 +106,6 @@ app.get('/', (req, res) => {
 
 app.get('/lobby', (req, res) => {
     const client = GetClient(req);
-    console.log('lobby gameID: ', client.gameID);
     if (client.gameID && games[client.gameID].started) res.redirect('/game'); // REDIRECT TO ACTIVE GAME
     else if (client.gameID == null) res.redirect('/');                        // REDIRECT TO HOME
     else res.sendFile(path.join(__dirname, 'views', 'lobby.html'));           // RENDER LOBBY
@@ -115,8 +114,8 @@ app.get('/lobby', (req, res) => {
 app.get('/invited', (req, res) => {
     const client = GetClient(req);
     if (client.gameID != null && games[client.gameID].started) res.redirect('/game'); // REDIRECT TO ACTIVE GAME
-    else if (client.gameID != null) res.redirect('/lobby');                           // REDIRECT TO LOBBY
-    else  res.sendFile(path.join(__dirname, 'views', 'invited.html'));                // RENDER INVITED PAGE
+    else if (client.gameID != null) res.redirect('/lobby');                                // REDIRECT TO LOBBY
+    else  res.sendFile(path.join(__dirname, 'views', 'invited.html'));                     // RENDER INVITED PAGE
 });
 
 app.get('/game', (req, res) => {
@@ -251,17 +250,25 @@ app.post('/api/join-game', (req, res) => {
     const gameID = req.body.gameID;
 
     // IF GAME IS NOT AVAILABLE
-    if (!games[gameID]){
-        res.json({url: '/'});
-        return;
+    if (!games[gameID])
+    {
+        return res.json({url: '/'});
     }
     if (client.gameID != null && games[client.gameID].started == true)
     {
-        res.redirect('/game');
+        return res.json({url: '/game'});
     }
     else
     {
+        // CHECK IF CLIENT IS ALREADY IN THE GAME
+        var gameClientNameIndex = games[gameID].players.indexOf(client.clientId);
+        if (gameClientNameIndex !== -1)
+        {
+            return res.json({url: '/lobby'});
+        }
+
         games[gameID].players.push(client.clientId);
+
         client.gameID = gameID;
         console.log('join game gameID: ', client.gameID);
         req.session.save();
@@ -388,8 +395,12 @@ app.post('/api/game-available', (req, res) => {
     const client = GetClient(req);
     if (!client) return;
 
-    if (games[req.body.gameID]) res.json({available: true});
-    else res.json({available: false});
+    if (games[req.body.gameID]) 
+    {
+        if (games[req.body.gameID].started) return res.json({state: "started"});
+        else return res.json({state: "true"});
+    }
+    else res.json({state: "unavailable"});
 });
 // -------------------- API ENDPOINTS -------------------- //
 
