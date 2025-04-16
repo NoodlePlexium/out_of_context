@@ -10,10 +10,12 @@
 <body>
 
     <div class="page-container">
-        <p id="title">Out <Span>of</Span> Context</p>
-        <div id="player-icon" class="player-icon"><button id="change-icon"></button></div>
+        <p id="title">out <Span>of</Span> context</p>
+        <div id="player-icon" class="player-icon"><div id="player-icon-image"></div><button id="change-icon"></button></div>
+        
+        <p style="margin-top: 4rem; margin-bottom: 0;">choose a nickname</p>
         <div id="home-grid">
-            <input type="text" placeholder="coolnickname" id="name-input">
+            <input type="text" placeholder="Guest" id="name-input">
             <button id="create-game">create game</button>    
         </div>
     </div>
@@ -22,7 +24,7 @@
 
         const nameInput = document.getElementById('name-input');
         const changeIcon = document.getElementById('change-icon');
-        const playerIcon = document.getElementById('player-icon');
+        const playerIconImage = document.getElementById('player-icon-image');
         const createGame = document.getElementById('create-game');
 
         // EVENT LISTENER FOR CHANGING PLAYER'S NAME
@@ -33,8 +35,7 @@
         // EVENT LISNTENER FOR CHANGING PLAYER'S CHARACTER ICON
         changeIcon.addEventListener('click', ()=> {
             Request('change-icon', 'POST').then(response => {
-                console.log("image path:", `url("/assets/${response.icon}.png")`);
-                playerIcon.style.background = `url("/assets/${response.icon}.png")`;
+                playerIconImage.style.background = `url("/assets/${response.icon}.png")`;
             }).catch(error => { console.error('Error:', error); });
         });
 
@@ -58,7 +59,7 @@
 
             // GET THE PLAYER'S ICON NAME FROM THE SERVER
             Request('player-icon', 'GET').then(response => {
-                playerIcon.style.background = `url("/assets/${response.icon}.png")`;
+                playerIconImage.style.background = `url("/assets/${response.icon}.png")`;
             }).catch(error => { console.error('Error:', error); });
         }
 

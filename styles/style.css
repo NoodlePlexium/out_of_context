@@ -1,12 +1,27 @@
 :root {
     --secondary: #2a5fb5;
     --border: #052963;
+
+    --pink-light: #D9D9D9;
+    --pink-dark: #BD8080;
+
+    --green-light: #A3C8A9;
+    --green-dark: #58735d;
+
+    --red-light: #C05757;
+    --red-dark: #632727;
 }
 
 @font-face {
-    font-family: 'Anton';
+    font-family: 'Rubik';
     src: url('/fonts/RubikMonoOne-Regular.ttf') format('truetype');
 }
+
+@font-face {
+    font-family: 'Jac';
+    src: url('/fonts/JacquesFrancois-Regular.ttf') format('truetype');
+}
+
 
 body {
     display: flex;
@@ -14,19 +29,25 @@ body {
     width: 100vw;
     height: 100vh;
     margin: 0;
-    background: linear-gradient(156deg, rgba(0, 164, 230, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%);
+    background: white;
+    font-family: Jac, Arial, Helvetica, sans-serif;
 }
 button {
-    border: 2px solid var(--border);
+    border: 1px solid var(--pink-dark);
+    background: var(--pink-light);
     outline: none;
     border-radius: 50px;
-    font-size: 1.6rem;
-    background: var(--secondary);
-    color: rgb(255, 255, 255);
     padding: 0.5rem;
+    font-family: Jac, Arial, Helvetica, sans-serif;
+    color: rgb(0, 0, 0);
+    font-size: 1.6rem;
+}
+p {
+    font-size: 1.4rem;
 }
 input {
-    border: 2px solid var(--border);
+    font-family: Jac, Arial, Helvetica, sans-serif;
+    border: 1px solid var(--pink-dark);
     outline: none;
     border-radius: 50px;
     font-size: 1.6rem;
@@ -40,6 +61,24 @@ input {
     box-sizing: border-box; 
     align-items: center;
     justify-content: center;
+    position: relative;
+}
+#home-btn {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0.3rem;
+    padding-left: 1.4rem;
+    padding-right: 1.4rem;
+}
+#home-btn div {
+    background: url('/assets/home.png');
+    width: 30px;
+    height: 30px;
 }
 #home-grid {
     display: grid;
@@ -48,43 +87,78 @@ input {
 }
 #title {
     margin-bottom: 5rem;
+    margin-top: 0;
     font-size: 2.5rem;
-    font-family: Arial, Helvetica, sans-serif;
-    color: white;
-    background: var(--secondary);
-    border: 5px solid var(--border);
+    font-family: Jac, Arial, Helvetica, sans-serif;
+    color: rgb(0, 0, 0);
     padding: 0.5rem;
     border-radius: 20px;
 }
 #title span {
-    color: #e7af5a;
-    font-family: Anton, Arial, Helvetica, sans-serif;
+    color: var(--pink-dark);
+    font-family: Rubik, Arial, Helvetica, sans-serif;
 }
-.player-icon {
+#player-list {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    background: var(--pink-light);
+    margin-bottom: 2rem;
+    padding: 0.5rem;
+    gap: 0.5rem;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+.player-item {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.3rem;
+}
+.other-player-icon {
     width: 100px;
     height: 100px;
+    background: var(--pink-light);
+    border-radius: 50px;
+}
+.player-icon {
+    width: 150px;
+    height: 150px;
     border-radius: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: relative;
-    border: 8px solid var(--border);
+    background: var(--pink-light);
+}
+#player-icon-image {
+    width: 100px;
+    height: 100px;
+    z-index: 999;
 }
 #change-icon {
     z-index: 999;
     background: url("/assets/refresh.png");
+    background-color: var(--pink-light);
+    border: none;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    bottom: 80%;
-    left: 80%;
+    top: 85%;
+    left: 85%;
     position: absolute;
     width: 40px;
     height: 40px;
     border-radius: 20px;
 }
 #change-icon:hover {
-    background-color: var(--secondary);
+    background-color: var(--pink-dark);
+}
+#change-icon:active {
+    background-color: var(--pink-light);
 }
 #name-input {
-    margin-top: 2rem;
+    margin-top: 0.3rem;
     padding: 0.5rem;
 }
 #write-area {
@@ -96,9 +170,14 @@ input {
 @media screen and (max-width: 600px) {
     input, button {
         font-size: 1.4rem !important;
+        padding: 0.3rem;
     }
     #title {
         font-size: 2.5rem !important;
+    }
+    .player-icon {
+        width: 120px;
+        height: 120px;
     }
 }
 @media screen and (max-width: 500px) {

@@ -11,16 +11,16 @@
 <body>
 
     <div class="page-container">
-        
-        <grid id="player-grid">
-        
-        </grid>
 
-        <div id="player-icon" class="player-icon"><button id="change-icon"></button></div>
+        <button id="home-btn"><div></div></button>
+    
+        <div id="player-list">
+        </div>
+
+        <div id="player-icon" class="player-icon"><div id="player-icon-image"></div><button id="change-icon"></button></div>
 
         <div id="home-grid">
-            <input type="text" placeholder="coolnickname" id="name-input">
-            <button id="leave">leave</button>
+            <input type="text" placeholder="Guest" id="name-input" style="margin-top: 2rem;">
             <button id="inviteBtn">invite</button>
             <button id="start-game">start game</button>
         </div>
@@ -32,12 +32,12 @@
     <script>
 
         const nameInput = document.getElementById('name-input');
-        const playerGrid = document.getElementById('player-grid');
+        const playerList = document.getElementById('player-list');
         const changeIcon = document.getElementById('change-icon');
-        const playerIcon = document.getElementById('player-icon');
+        const playerIconImage = document.getElementById('player-icon-image');
         const inviteBtn = document.getElementById('inviteBtn');
         const startGame = document.getElementById('start-game');
-        const leaveBtn = document.getElementById('leave');
+        const homeBtn = document.getElementById('home-btn');
 
         let clientId = null;
         let gameID = null;
@@ -53,7 +53,7 @@
         // EVENT LISNTENER FOR CHANGING PLAYER'S CHARACTER ICON
         changeIcon.addEventListener('click', ()=> {
             Request('change-icon', 'POST', { gameID: gameID }).then(response => {
-                playerIcon.style.background = `url("/assets/${response.icon}.png")`;
+                playerIconImage.style.background = `url("/assets/${response.icon}.png")`;
             }).catch(error => { console.error('Error:', error); });
         });
 
@@ -65,7 +65,7 @@
         });
 
         // EVENT LISTENER TO LEAVE THE GAME
-        leaveBtn.addEventListener('click', ()=> {
+        homeBtn.addEventListener('click', ()=> {
             Request('leave-game', 'POST').then(response => {
                 window.location.href = response.url;
             });
@@ -82,7 +82,7 @@
                 playerData = response.playerData;
 
                 // SET CLIENT'S ICON
-                playerIcon.style.background = `url("/assets/${response.icon}.png")`;
+                playerIconImage.style.background = `url("/assets/${response.icon}.png")`;
 
                 // SET CLIENT'S GAMERTAG
                 nameInput.value = response.gamertag;
@@ -144,9 +144,14 @@
         function AddPlayer(gamertag, clientId, icon)
         {
             var newElement = document.createElement("div");
-            newElement.innerHTML = `<div class="player-icon"></div><div class="player-name">${gamertag}</div>`;
-            newElement.firstChild.style.background = `url("/assets/${icon}.png")`;
-            playerGrid.appendChild(newElement);
+            newElement.innerHTML = `
+            <div class="player-item">
+                <div class="other-player-icon"></div>
+                <div>${gamertag}</div>
+            </div>`;
+            console.log(newElement.querySelector(".other-player-icon"));
+            newElement.querySelector(".other-player-icon").style.background = `url("/assets/${icon}.png")`;
+            playerList.appendChild(newElement);
             playerData[clientId] = newElement;
         }
 
@@ -166,7 +171,7 @@
         {
             console.log('update player icon:', clientId);
             console.log(playerData[clientId]);
-            playerData[clientId].getElementsByClassName("player-icon")[0].style.background = `url("/assets/${icon}.png")`;
+            playerData[clientId].querySelector(".other-player-icon").style.background = `url("/assets/${icon}.png")`;
         }
 
         async function Request(endpoint, method, body=null) 
