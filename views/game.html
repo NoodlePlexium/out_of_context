@@ -14,10 +14,9 @@
 
         <button id="home-btn"><div></div></button>
 
-        <!-- PLAYER'S TURN UI -->
-        <div id="write-container" style="display: none;">
-            <h1 style="text-align: center; font-size: 3rem;">Its your turn!</h1>
-            <p style="text-align: center; font-size: 2.5rem; margin-top: 0;">continue the story</p>
+        <!-- GAME RUNNING UI -->
+        <div id="write-container">
+            <p id="write-info">Begin the story</p>
             <div class="home-grid">
                 <p id="prev-sentence"></p>
                 <div style="display: flex; flex-direction: row">
@@ -27,16 +26,13 @@
             </div>
         </div>
 
-        <!-- PLAYER WAITS UI -->
-        <div id="wait-container" style="display: none;">
-            <h1 id="turn-indicator"></h1>
-        </div>
-
         <!-- GAME ENDS UI -->
         <div id="game-end-container" style="display: none;">
             <h1 style="text-align: center; font-size: 3rem;">Story Complete</h1>
             <div class="home-grid">
                 <p id="game-end-text"></p>
+                <p>play another round?</p>
+                <button id="ready">ready</button>
             </div>
         </div>
     </div>
@@ -44,19 +40,16 @@
     <script>
         const playerIcon = document.getElementById('player-icon');
         const homeBtn = document.getElementById('home-btn');
-
         const writeContainer = document.getElementById('write-container');
-        const prevSentence = document.getElementById('prev-sentence');
+        const writeInfo = document.getElementById('write-info');
+        const prevSentenceHTML = document.getElementById('prev-sentence');
         const writeArea = document.getElementById('write-area');
         const writeSubmit = document.getElementById('write-submit');
-
-        const waitContainer = document.getElementById('wait-container');
-        const turnIndicator = document.getElementById('turn-indicator');
-
         const gameEndContainer = document.getElementById('game-end-container');
         const gameEndText = document.getElementById('game-end-text');
+        const readyBtn = document.getElementById('ready');
 
-        let clientId = null;
+        let clientID = null;
         let gameID = null;
         let playerData = {};
         let playOrder = null;
@@ -64,10 +57,16 @@
 
         // EVENT LISTENER TO LEAVE THE GAME
         homeBtn.addEventListener('click', ()=> {
-            Request('leave-game', 'POST').then(response => {
-                window.location.href = response.url;
-            });
-        })
+            window.location.href = '/';
+            Request('leave-game', 'POST');
+        });
+
+        // EVENT LISTENER FOR STARTING THE GAME
+        readyBtn.addEventListener('click', ()=> {
+            readyBtn.style.background = "white";
+            Request('player-ready-to-play-again', 'POST', {}).then(response => {
+            }).catch(error => { console.error('Error:', error); });
+        });
         
 
         Init();
@@ -76,33 +75,17 @@
         {
             // GET THE CLIENT ID FROM THE SERVER
             Request('game-info', 'GET').then(response => {
-                clientId = response.clientId;
+                clientID = response.clientID;
                 gameID = response.gameID;
                 playerData = response.playerData;
 
-                // CONNECT SOCKETTO GAME ROOM
+                // CONNECT SOCKET TO GAME ROOM
                 socket.emit('joinGame', gameID);
-
-                // GET ORDER OF PLAY
-                Request('play-order', 'GET').then(response => {
-                    playOrder = response.order;
-
-                    // IF CLIENT IS FIRST
-                    if (playOrder[0] == clientId)
-                    {
-                        StartTurn();
-                    }
-                    else
-                    {
-                        writeContainer.style.display = 'none';
-                        waitContainer.style.display = 'block';
-                    }
-
-                }).catch(error => { console.error('Error:', error); });
 
                 // EVENT LISTENER TO SUBMIT SENTENCE
                 writeSubmit.addEventListener('click', ()=> {
-                    EndTurn();
+                    writeSubmit.style.background = "white";
+                    SubmitSentence();
                 });
 
             }).catch(error => { console.error('Error:', error); });
@@ -119,50 +102,55 @@
         socket.on('disconnect', () => {
             console.log('Disconnected from server!');
         });
-        socket.on('message', (data) => {
-            console.log('Message from server:', data);
-        });
         socket.on('playerLeft', (data) => {                         // PLAYER LEAVES ROOM
         
         });
-        socket.on('turnEnded', (data) => {
-
-            // IF IT IS NOW CLIENT'S TURN
-            if (playOrder[data.playerTurn] == clientId) {
-                prevSentence.textContent = data.sentence;
-                StartTurn();
-            }
-            turnIndicator.textContent = playerData.gamertags[data.playerTurn];
+        socket.on('nextRound', (data) => {
+            let prevSentence = data.stories[data.sentenceIndices[clientID]][data.stories[0].length -1];
+            StartRound(prevSentence);
         });
         socket.on('gameEnded', (data) => {
-            console.log("game ended!");
-            EndGame(data.story);
+            EndGame(data.stories);
+        });
+        socket.on('playAgain', (data) => {
+            ResetGame();
         });
 
-        function StartTurn()
+        function ResetGame()
         {
+            writeSubmit.style.background = "var(--green-light)";
+            readyBtn.style.background = "var(--green-light)";
+            writeInfo.textContent = 'Begin the story';
+            prevSentenceHTML.textContent = '';
+            writeArea.value = '';
+            writeArea.disabled = false;
             writeContainer.style.display = 'block';
-            waitContainer.style.display = 'none';
+            gameEndContainer.style.display = 'none';
         }
 
-        function EndTurn()
+        function StartRound(prevSentence)
+        {
+            writeSubmit.style.background = "var(--green-light)";
+            writeInfo.textContent = 'Continue the story:';
+            prevSentenceHTML.textContent = prevSentence;
+            writeArea.value = '';
+            writeArea.disabled = false;
+        }
+
+        function SubmitSentence()
         {
             sentence = writeArea.value;
-            writeArea.value = '';
-            prevSentence.textContent = '';
-            writeContainer.style.display = 'none';
-            waitContainer.style.display = 'block';
+            writeArea.disabled = true;
 
             // SEND SENTENCE TO SERVER
-            Request('end-turn', 'PUT', { sentence: sentence })
+            Request('submit-sentence', 'PUT', { sentence: sentence })
         }
 
-        function EndGame(story)
+        function EndGame(stories)
         {
             writeContainer.style.display = 'none';
-            waitContainer.style.display = 'none';
             gameEndContainer.style.display = 'block';
-            gameEndText.textContent = story;
+            gameEndText.textContent = stories[0];
         }
 
         async function Request(endpoint, method, body=null) 

@@ -1,0 +1,4 @@
+Begin your story. end turn (waiting for others) when all players are done ->
+continue the story. given last players prev sentence. end turn (waiting for others) when all players are done -> repeat until num rounds completed
+end. display stories. (ready up) (waiting for all players to ready up) ->
+reset game start again ->

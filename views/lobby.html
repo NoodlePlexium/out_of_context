@@ -27,7 +27,7 @@
         <div class="home-grid">
             <input type="text" placeholder="Guest" id="name-input" style="margin-top: 2rem;">
             <button id="inviteBtn">invite</button>
-            <button id="start-game">start game</button>
+            <button id="ready">ready</button>
         </div>
     </div>
 
@@ -41,12 +41,12 @@
         const changeIcon = document.getElementById('change-icon');
         const playerIconImage = document.getElementById('player-icon-image');
         const inviteBtn = document.getElementById('inviteBtn');
-        const startGame = document.getElementById('start-game');
+        const readyBtn = document.getElementById('ready');
         const homeBtn = document.getElementById('home-btn');
 
-        let clientId = null;
+        let clientID = null;
         let gameID = null;
-        let playerData = {};
+        let playerHTML = {};
 
         // EVENT LISTENER FOR CHANGING PLAYER'S NAME
         nameInput.addEventListener('change', ()=> {
@@ -63,18 +63,17 @@
         });
 
         // EVENT LISTENER FOR STARTING THE GAME
-        startGame.addEventListener('click', ()=> {
-            Request('start-game', 'POST', {}).then(response => {
-                window.location.href = response.url; 
+        readyBtn.addEventListener('click', ()=> {
+            readyBtn.style.background = "white";
+            Request('player-ready-to-start', 'POST', {}).then(response => {
             }).catch(error => { console.error('Error:', error); });
         });
 
         // EVENT LISTENER TO LEAVE THE GAME
         homeBtn.addEventListener('click', ()=> {
-            Request('leave-game', 'POST').then(response => {
-                window.location.href = response.url;
-            });
-        })
+            window.location.href = '/';
+            Request('leave-game', 'POST');
+        });
 
         Init();
 
@@ -82,7 +81,7 @@
         {
             // GET THE CLIENT ID FROM THE SERVER
             Request('game-info', 'GET').then(response => {
-                clientId = response.clientId;
+                clientID = response.clientID;
                 gameID = response.gameID;
                 playerData = response.playerData;
 
@@ -101,11 +100,18 @@
                     ? `http://localhost:8080/invited/?game=${gameID}` 
                     : `https://out-of-context-0b91e7b9a70a.herokuapp.com/invited/?game=${gameID}`
                     navigator.clipboard.writeText(inviteURL);
+
+                    // SET TEXT CONTENT TO "COPIED" FOR A SHORT TIME
+                    let originalText = inviteBtn.textContent;
+                    inviteBtn.textContent = "copied link";
+                    setTimeout(() => {
+                        inviteBtn.textContent = originalText;
+                    }, 1500);
                 });
                 
                 // OTHER PLAYER'S DATA 
-                for (let i=0; i<playerData.gamertags.length; i++) {
-                    console.log("Add player to html");
+                for (let i=0; i<playerData.gamertags.length; i++) 
+                {
                     AddPlayer(playerData.gamertags[i], playerData.clientIds[i], playerData.icons[i]);
                 }
             }).catch(error => { console.error('Error:', error); });
@@ -122,61 +128,59 @@
         socket.on('disconnect', () => {
             console.log('Disconnected from server!');
         });
-        socket.on('message', (data) => {
-            console.log('Message from server:', data);
-        });
         socket.on('playerJoined', (data) => {                       // PLAYER JOINS ROOM
-            console.log("player joined lobby");
-            AddPlayer(data.gamertag, data.clientId, data.icon);
+            AddPlayer(data.gamertag, data.clientID, data.icon);
         });
         socket.on('playerLeft', (data) => {                         // PLAYER LEAVES ROOM
-            RemovePlayer(data.clientId);
+            RemovePlayer(data.clientID);
+        });
+        socket.on('playerReady', (data) => {
+            if (data.clientID == clientID) return;
+            PlayerReady(data.clientID);
         });
         socket.on('startGame', (response) => {                      // PLAYER STARTS GAME
             window.location.href = response.redirect;
         });
         socket.on('changedIcon', (data) => {
-            if (data.clientId == clientId) return;
-            console.log("player changed icon");
-            UpdatePlayerIcon(data.clientId, data.icon);
+            if (data.clientID == clientID) return;
+            UpdatePlayerIcon(data.clientID, data.icon);
         });
         socket.on('changedName', (data) => {
-            if (data.clientId == clientId) return;
-            console.log("player changed their name");
-            UpdatePlayerName(data.clientId, data.gamertag);
+            if (data.clientID == clientID) return;
+            UpdatePlayerName(data.clientID, data.gamertag);
         });
 
-        function AddPlayer(gamertag, clientId, icon)
+        function AddPlayer(gamertag, clientID, icon)
         {
             var newElement = document.createElement("div");
+            newElement.classList.add("player-item");
             newElement.innerHTML = `
-            <div class="player-item">
                 <div class="other-player-icon"></div>
-                <div>${gamertag}</div>
-            </div>`;
-            console.log(newElement.querySelector(".other-player-icon"));
+                <div class="player-name">${gamertag}</div>
+            `;
             newElement.querySelector(".other-player-icon").style.background = `url("/assets/${icon}.png")`;
             playerList.appendChild(newElement);
-            playerData[clientId] = newElement;
+            playerHTML[clientID] = newElement;
         }
 
-        function RemovePlayer(clientId)
+        function RemovePlayer(clientID)
         {
-            console.log(playerData);
-            playerData[clientId].remove();
-            delete playerData[clientId];
+            delete playerHTML[clientID];
         }
 
-        function UpdatePlayerName(clientId, gamertag)
+        function PlayerReady(clientID)
         {
-            playerData[clientId].getElementsByClassName("player-name")[0].textContent = gamertag;
+            playerHTML[clientID].style.border = "1px solid #2ff574";
         }
 
-        function UpdatePlayerIcon(clientId, icon)
+        function UpdatePlayerName(clientID, gamertag)
         {
-            console.log('update player icon:', clientId);
-            console.log(playerData[clientId]);
-            playerData[clientId].querySelector(".other-player-icon").style.background = `url("/assets/${icon}.png")`;
+            playerHTML[clientID].querySelector(".player-name").textContent = gamertag;
+        }
+
+        function UpdatePlayerIcon(clientID, icon)
+        {
+            playerHTML[clientID].querySelector(".other-player-icon").style.background = `url("/assets/${icon}.png")`;
         }
 
         async function Request(endpoint, method, body=null) 
