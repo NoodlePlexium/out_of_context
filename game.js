@@ -48,6 +48,11 @@ class Game
     PlayAgain()
     {
         this.stories = [];
+        for (const clientID in this.playersReady)
+        {
+            this.playersReady[clientID] = false;
+            this.stories.push([]);
+        }
         this.round = 1;
         this.gameEnded = false;
     }
